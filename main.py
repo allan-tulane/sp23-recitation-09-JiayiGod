@@ -12,7 +12,32 @@ def shortest_shortest_path(graph, source):
       a dict where each key is a vertex and the value is a tuple of
       (shortest path weight, shortest path number of edges). See test case for example.
     """
-    ### TODO
+    def ssp_helper(visited,frontier):
+        if len(frontier)==0:
+            return visited
+        else:
+            # pick next node with minimum distance from heap
+            distance, node_edges = heappop(frontier)
+            node = node_edges[0]
+            edges = node_edges[1]
+            if node in visited:
+                # Already visited, if it is same as min distance first and has fewer edges
+                # update visited with this node 
+                if visited[node][0]==distance and visited[node][1]>edges:
+                    visited[node]=(distance,edges)
+                return ssp_helper(visited,frontier)
+            else:
+                # Not visited, then update the node to visited
+                visited[node]=(distance,edges) 
+                for neighbor, weight in graph[node]:
+                    # update the frontier
+                    heappush(frontier,(distance+weight,(neighbor,edges+1)))
+                return ssp_helper(visited,frontier)
+
+    frontier=[]
+    heappush(frontier,(0,(source,0))) # initialize the frontier, first 0 is distance, second 0 is num of edges
+    visited=dict() # store final result
+    return ssp_helper(visited,frontier)
     pass
     
 def test_shortest_shortest_path():
@@ -41,6 +66,25 @@ def bfs_path(graph, source):
       that vertex in the shortest path tree.
     """
     ###TODO
+    def bfs_path_helper(visited, frontier,path):
+        if len(frontier)==0:
+            return path
+        else:
+            visited=visited|frontier # update the visited set
+            frontier_new=set()
+            for node in frontier:
+                for neighbor in graph[node]:
+                # find the neighbors of frontier
+                    if neighbor not in visited:
+                        # make update if the neighbor is not visited 
+                        path[neighbor]=node
+                        frontier_new.add(neighbor)   
+            return bfs_path_helper(visited, frontier_new, path)
+        
+    visited=set()
+    frontier=set([source])
+    path=dict()
+    return bfs_path_helper(visited,frontier,path)
     pass
 
 def get_sample_graph():
@@ -66,6 +110,23 @@ def get_path(parents, destination):
       (excluding the destination node itself). See test_get_path for an example.
     """
     ###TODO
+    def get_path_helper(res,destination):
+        if destination==None:
+            return res
+        else:
+            checker=0 # use to check if the destination can be traced back
+            for parent in parents:
+                if parent==parents[destination]:
+                    # trace back the path
+                    destination=parent
+                    res=parents[destination]+res
+                    checker+=1
+            if checker!=1:
+                destination=None
+            return get_path_helper(res,destination)
+         
+    res=parents[destination]
+    return get_path_helper(res,destination)
     pass
 
 def test_get_path():
